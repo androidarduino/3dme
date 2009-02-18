@@ -1,11 +1,15 @@
-#define DEBUG
+/*TODO:
+
+
+  1. Split the class, get the display scene function out of the class, rename the class to Q3dsFile, specifically used to load 3ds file and maintain a 3D mesh in it. The scene should be able to render several files at the same time
+
+*/
 #include <QtGui>
 #include <QApplication>
 #include <QDebug>
 #include "q3dstools.h"
 
-
-class my3ds:public QGLWidget
+class Q3dsFile:public QGLWidget
 {
 #define	TEX_XSIZE	1024
 #define	TEX_YSIZE	1024
@@ -37,7 +41,7 @@ class my3ds:public QGLWidget
     public:
         bool iflush;
         bool anti_alias;
-        my3ds(QString modelFile, QWidget* parent=0):QGLWidget(parent)
+        Q3dsFile(QString modelFile, QWidget* parent=0):QGLWidget(parent)
     {
         setMouseTracking(true);
         view_rotx=view_roty=view_rotz=anim_rotz=0.0;
@@ -191,10 +195,6 @@ class my3ds:public QGLWidget
             lib3ds_file_eval(file,0.);
         }
 
-        /*!
-         * Render node recursively, first children, then parent.
-         * Each node receives its own OpenGL display list.
-         */
         void render_node(Lib3dsNode *node)
         {
             ASSERT(file);
@@ -266,7 +266,7 @@ class my3ds:public QGLWidget
                                             int bytespp=4;
                                             void *pixel = NULL;
                                             glGenTextures(1, &pt->tex_id);
-                                            printf("Uploading texture to OpenGL, id %d, at %d bytepp\n",pt->tex_id, bytespp);
+//                                            printf("Uploading texture to OpenGL, id %d, at %d bytepp\n",pt->tex_id, bytespp);
                                             pixel = tex.bits();
                                             upload_format = GL_RGBA;//incase bytespp=4
                                             glBindTexture(GL_TEXTURE_2D, pt->tex_id);
@@ -298,9 +298,9 @@ class my3ds:public QGLWidget
                                 }
                                 else
                                 {
-                                    static const Lib3dsRgba a={0.7, 0.7, 0.7, 1.0};
-                                    static const Lib3dsRgba d={0.7, 0.7, 0.7, 1.0};
-                                    static const Lib3dsRgba s={1.0, 1.0, 1.0, 1.0};
+                                    const Lib3dsRgba a={0.7, 0.7, 0.7, 1.0};
+                                    const Lib3dsRgba d={0.7, 0.7, 0.7, 1.0};
+                                    const Lib3dsRgba s={1.0, 1.0, 1.0, 1.0};
                                     //set material properties
                                     glMaterialfv(GL_FRONT, GL_AMBIENT, a);
                                     glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
@@ -355,11 +355,6 @@ class my3ds:public QGLWidget
             }
         }
 
-        /*!
-         * Update information about a light.  Try to find corresponding nodes
-         * if possible, and copy values from nodes into light struct.
-         */
-
         void light_update(Lib3dsLight *l)
         {
             Lib3dsNode *ln, *sn;
@@ -377,10 +372,10 @@ class my3ds:public QGLWidget
         void draw_bounds(Lib3dsVector tgt)
         {
 
-            static const GLfloat white[4] = {1.,1.,1.,1.};
-            static const GLfloat red[4] = {1.,0.,0.,1.};
-            static const GLfloat green[4] = {0.,1.,0.,1.};
-            static const GLfloat blue[4] = {0.,0.,1.,1.};
+            const GLfloat white[4] = {1.,1.,1.,1.};
+            const GLfloat red[4] = {1.,0.,0.,1.};
+            const GLfloat green[4] = {0.,1.,0.,1.};
+            const GLfloat blue[4] = {0.,0.,1.,1.};
             double cx,cy,cz;
             double lx,ly,lz;
             lx = sx / 10.; ly = sy / 10.; lz = sz / 10.;
@@ -454,10 +449,7 @@ class my3ds:public QGLWidget
             glPopMatrix();
         }
 
-        /*!
-         * Main display function; called whenever the scene needs to be redrawn.
-         */
-        void display()
+        void display(bool externCall=true)
         {
             Lib3dsNode *c,*t;
             Lib3dsFloat fov=0, roll=0;
@@ -468,9 +460,12 @@ class my3ds:public QGLWidget
             Lib3dsCamera *cam;
             Lib3dsVector v;
             Lib3dsNode *p;
-            if(file!=NULL && file->background.solid.use)//put in the default background color
-                glClearColor(file->background.solid.col[0], file->background.solid.col[1], file->background.solid.col[2],1.);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            if(!externCall)
+            {
+                if(file!=NULL && file->background.solid.use)//put in the default background color
+                    glClearColor(file->background.solid.col[0], file->background.solid.col[1], file->background.solid.col[2],1.);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            }
             if(anti_alias)
                 glEnable(GL_POLYGON_SMOOTH);
             else
@@ -532,9 +527,9 @@ class my3ds:public QGLWidget
              * light objects directly.
              */
             {
-                static const GLfloat a[] = {0.0f, 0.0f, 0.0f, 1.0f};
-                static GLfloat c[] = {1.0f, 1.0f, 1.0f, 1.0f};
-                static GLfloat p[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                const GLfloat a[] = {0.0f, 0.0f, 0.0f, 1.0f};
+                GLfloat c[] = {1.0f, 1.0f, 1.0f, 1.0f};
+                GLfloat p[] = {0.0f, 0.0f, 0.0f, 1.0f};
                 Lib3dsLight *l;
 
                 int li=GL_LIGHT0;
@@ -593,11 +588,9 @@ class my3ds:public QGLWidget
                 glMaterialfv(GL_FRONT, GL_EMISSION, black);
             }
         }
-
-    protected:
-        void mouseMoveEvent(QMouseEvent* event)
+        void mouse_move(QMouseEvent* event)
         {
-            if( event->buttons()==Qt::LeftButton)
+             if( event->buttons()==Qt::LeftButton)
             {
                 view_rotz += 0.1 * (event->x() - mx);
                 view_rotx += 0.1 * (event->y() - my);
@@ -606,9 +599,9 @@ class my3ds:public QGLWidget
             mx = event->x();
             my = event->y();
         }
-        void keyPressEvent(QKeyEvent* event)
+        void key_press(QKeyEvent* event)
         {
-            int keyCode=event->key();
+             int keyCode=event->key();
             if(keyCode==Qt::Key_X)
                 currentCamera="Camera_X";
             if(keyCode==Qt::Key_Y)
@@ -620,20 +613,41 @@ class my3ds:public QGLWidget
             view_rotx = view_roty = view_rotz = anim_rotz = 0.;
             update();
         }
-        void wheelEvent(QWheelEvent* event)
+        void wheel(QWheelEvent* event)
         {
-            if(event->delta()>0)
+             if(event->delta()>0)
                 zoom*=1.1;
             else
                 zoom*=0.9;
             qDebug()<<zoom;
             update();
         }
+    protected:
+        void mouseMoveEvent(QMouseEvent* event)
+        {
+            mouse_move(event);
+       }
+        void keyPressEvent(QKeyEvent* event)
+        {
+            key_press(event);
+       }
+        void wheelEvent(QWheelEvent* event)
+        {
+            wheel(event);
+       }
     public:
+        void initGL()
+        {
+            initializeGL();
+        }
+        void resize(int w, int h)
+        {
+            resizeGL(w,h);
+        }
     protected:
         void paintGL()
         {
-            display();
+            display(false);
         }
         void resizeGL(int width, int height)
         {
@@ -657,16 +671,68 @@ class my3ds:public QGLWidget
         }
 };
 
+class Q3dsScene:public QGLWidget
+{
+    public:
+        Q3dsScene(QWidget* parent=0):QGLWidget(parent)
+    {
+        setMouseTracking(true);
+
+    }
+        QList<Q3dsFile*> models;
+    protected:
+        void paintGL()
+        {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            foreach(Q3dsFile* model, models)
+                model->display();
+        }
+        void initializeGL()
+        {
+            models.at(0)->initGL();
+        }
+        void resizeGL(int width, int height)
+        {
+            foreach(Q3dsFile* model, models)
+                model->resize(width,height);
+            glViewport(0,0,width,height);
+        }
+        void mouseMoveEvent(QMouseEvent* event)
+        {
+            foreach(Q3dsFile* model, models)
+                model->mouse_move(event);;
+            update();
+        }
+        void keyPressEvent(QKeyEvent* event)
+        {
+            foreach(Q3dsFile* model, models)
+                model->key_press(event);;
+            update();
+        }
+        void wheelEvent(QWheelEvent* event)
+        {
+            foreach(Q3dsFile* model, models)
+                model->wheel(event);;
+            update();
+        }
+};
+
 int main(int argc, char** argv)
 {
     QApplication app(argc,argv);
-    QString modelFile=QString(argv[1]);
-    my3ds fff(modelFile);
-    if (modelFile =="") {
-        qDebug()<<"3dsplayer: Error: No 3DS file specified";
-        exit(1);
-    }
-    fff.setWindowTitle("yes, it works now!");
-    fff.show();
+    Q3dsFile monkey("monkey.3ds");
+    Q3dsFile skates("skates.3ds");
+    Q3dsFile venus("venus.3ds");
+    Q3dsScene scene;
+    scene.models.append(&monkey);
+    scene.models.append(&skates);
+    scene.models.append(&venus);
+    //monkey.show();
+    //skates.show();
+    //venus.show();
+    Q3dsFile s("skates.3ds");
+    s.show();
+    scene.show();
+
     return app.exec();
 }
