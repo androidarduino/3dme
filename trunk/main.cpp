@@ -1,7 +1,20 @@
 /*TODO:
 
 
-  1. Split the class, get the display scene function out of the class, rename the class to Q3dsFile, specifically used to load 3ds file and maintain a 3D mesh in it. The scene should be able to render several files at the same time
+  1. Done: Split the class, get the display scene function out of the class, rename the class to Q3dsModel, specifically used to load 3ds file and maintain a 3D mesh in it. The scene should be able to render several files at the same time
+
+  2. Zooming function not working properly
+
+  3. Optimize the rendering function, keep the list for next time rendering to achieve higher performance
+
+  4. Implement the following operations on the model:
+
+    a. Scalling according to requirements, eg. scale 0.05 times, or scale to 200x200
+    b. Rotating according to requirements, eg. rotate to horizontal, rotate x 60 degrees
+    c. Panning according to requirements, eg. moving the bottom bounding center to (0,120,0)
+    d. Statistics, like faces, time consuming rate, texture size, etc.
+
+  5. There might be undeleted objects, eg. file
 
 */
 #include <QtGui>
@@ -9,7 +22,7 @@
 #include <QDebug>
 #include "q3dstools.h"
 
-class Q3dsFile:public QGLWidget
+class Q3dsModel:public QGLWidget
 {
 #define	TEX_XSIZE	1024
 #define	TEX_YSIZE	1024
@@ -41,7 +54,7 @@ class Q3dsFile:public QGLWidget
     public:
         bool iflush;
         bool anti_alias;
-        Q3dsFile(QString modelFile, QWidget* parent=0):QGLWidget(parent)
+        Q3dsModel(QString modelFile, QWidget* parent=0):QGLWidget(parent)
     {
         setMouseTracking(true);
         view_rotx=view_roty=view_rotz=anim_rotz=0.0;
@@ -679,12 +692,12 @@ class Q3dsScene:public QGLWidget
         setMouseTracking(true);
 
     }
-        QList<Q3dsFile*> models;
+        QList<Q3dsModel*> models;
     protected:
         void paintGL()
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            foreach(Q3dsFile* model, models)
+            foreach(Q3dsModel* model, models)
                 model->display();
         }
         void initializeGL()
@@ -693,25 +706,25 @@ class Q3dsScene:public QGLWidget
         }
         void resizeGL(int width, int height)
         {
-            foreach(Q3dsFile* model, models)
+            foreach(Q3dsModel* model, models)
                 model->resize(width,height);
             glViewport(0,0,width,height);
         }
         void mouseMoveEvent(QMouseEvent* event)
         {
-            foreach(Q3dsFile* model, models)
+            foreach(Q3dsModel* model, models)
                 model->mouse_move(event);;
             update();
         }
         void keyPressEvent(QKeyEvent* event)
         {
-            foreach(Q3dsFile* model, models)
+            foreach(Q3dsModel* model, models)
                 model->key_press(event);;
             update();
         }
         void wheelEvent(QWheelEvent* event)
         {
-            foreach(Q3dsFile* model, models)
+            foreach(Q3dsModel* model, models)
                 model->wheel(event);;
             update();
         }
@@ -720,9 +733,9 @@ class Q3dsScene:public QGLWidget
 int main(int argc, char** argv)
 {
     QApplication app(argc,argv);
-    Q3dsFile monkey("monkey.3ds");
-    Q3dsFile skates("skates.3ds");
-    Q3dsFile venus("venus.3ds");
+    Q3dsModel monkey("monkey.3ds");
+    Q3dsModel skates("skates.3ds");
+    Q3dsModel venus("venus.3ds");
     Q3dsScene scene;
     scene.models.append(&monkey);
     scene.models.append(&skates);
@@ -730,7 +743,7 @@ int main(int argc, char** argv)
     //monkey.show();
     //skates.show();
     //venus.show();
-    Q3dsFile s("skates.3ds");
+    Q3dsModel s("skates.3ds");
     s.show();
     scene.show();
 
