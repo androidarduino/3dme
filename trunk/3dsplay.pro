@@ -11,5 +11,5 @@ LIBS += -l3ds -lglut -lGL -lSDL -lSDL_image
 CONFIG += debug
 
 # Input
-HEADERS += q3dstools.h 
+HEADERS += q3dstools.h q3dsmodel.h q3dsscene.h
 SOURCES += main.cpp
