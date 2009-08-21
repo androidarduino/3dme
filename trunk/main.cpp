@@ -10,7 +10,7 @@
 int main(int argc, char** argv)
 {
     QApplication app(argc,argv);
-    Q3dsModel monkey("monkey.3ds");
+/*    Q3dsModel monkey("monkey.3ds");
     Q3dsModel skates("skates.3ds");
     Q3dsModel skates2("skates.3ds");
     Q3dsModel skates3("skates.3ds");
@@ -38,5 +38,15 @@ int main(int argc, char** argv)
 //    skates2.moveTo(0,200,400);
 //    skates3.moveTo(0,200,400);
     scene.show();
+*/
+    Q3dsModel head("head.3ds");
+    Q3dsModel hair("hair.3ds");
+    Q3dsScene scene;
+    scene.models.append(&head);
+    scene.models.append(&hair);
+    head.scaleTo(800);
+    hair.scaleTo(800);
+    scene.show();
+    scene.resize(600,600);
     return app.exec();
 }
