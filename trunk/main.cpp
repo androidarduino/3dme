@@ -40,12 +40,16 @@ int main(int argc, char** argv)
     scene.show();
 */
     Q3dsModel head("head.3ds");
-    Q3dsModel hair("hair.3ds");
+    Q3dsModel hair;
+    hair.replaceColor("Material #2", QColor::fromRgbF(0,1,0,0.8));
+    hair.replaceColor("08 - Default", QColor::fromRgb(0,0,255));
+    hair.loadModel("hair.3ds");
     Q3dsScene scene;
     scene.models.append(&head);
     scene.models.append(&hair);
     head.scaleTo(800);
-    hair.scaleTo(800);
+    hair.scaleTo(1000);
+    hair.moveTo(-50,0,100);
     scene.show();
     scene.resize(600,600);
     return app.exec();

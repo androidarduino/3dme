@@ -16,8 +16,7 @@ class Player_texture
 class Q3dsModel:public QGLWidget
 {
     public:
-        Q3dsModel(QString modelFile, QWidget* parent=0);
-        void initGL();
+        Q3dsModel(QString modelFile="", QWidget* parent=0);
         void resize(int w, int h);
         void scale(float x, float y, float z);
         void scaleTo(float x);
@@ -29,6 +28,9 @@ class Q3dsModel:public QGLWidget
         void wheel(QWheelEvent* event);
         void key_press(QKeyEvent* event);
         void mouse_move(QMouseEvent* event);
+        void replaceColor(QString colorName, QColor color);
+        void loadModel(QString fileName);
+        void initGL();
     protected:
         void paintGL();
         void initializeGL();
@@ -36,8 +38,8 @@ class Q3dsModel:public QGLWidget
         void mouseMoveEvent(QMouseEvent* event);
         void keyPressEvent(QKeyEvent* event);
         void wheelEvent(QWheelEvent* event);
+        virtual void retrieveTexture(QImage& picture, QString fileName);
     private:
-        void load_model(QString fileName);
         void draw_light(const GLfloat *pos, const GLfloat *color);
         void draw_bounds(Lib3dsVector tgt);
         void light_update(Lib3dsLight *l);
@@ -59,8 +61,7 @@ class Q3dsModel:public QGLWidget
         float	view_rotx , view_roty , view_rotz ;
         float	anim_rotz ;
         int	mx, my;
-
-
+        QMap<QString, QColor> colorMap;
 };
 
 Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
@@ -80,10 +81,18 @@ Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
     xOffset=yOffset=zOffset=0;
     xScale=yScale=zScale=1;
     TEX_XSIZE=TEX_YSIZE=1024;
-    load_model(modelFile);
+    if(modelFile!="")
+        loadModel(modelFile);
 }
-
-void Q3dsModel::load_model(QString fileName)
+void Q3dsModel::retrieveTexture(QImage& picture, QString fileName)
+{
+    picture.load(fileName);
+}
+void Q3dsModel::replaceColor(QString colorName, QColor color)
+{
+    colorMap[colorName]=color;
+}
+void Q3dsModel::loadModel(QString fileName)
 {
     //decompose file name and data path
     int slash=fileName.lastIndexOf('/');
@@ -253,6 +262,10 @@ void Q3dsModel::render_node(Lib3dsNode *node)
             mesh->user.d=glGenLists(1);//create an OpenGL list and assign to the mesh
             glNewList(mesh->user.d, GL_COMPILE);
             {
+                //enable gl blending for transparency
+                glEnable(GL_BLEND);
+                glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
                 unsigned p;
                 Lib3dsVector *normalL=(Lib3dsVector*)malloc(3*sizeof(Lib3dsVector)*mesh->faces);//allocate normal line memory
                 Lib3dsMaterial *oldmat = (Lib3dsMaterial *)-1;//old material
@@ -271,8 +284,12 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                     int tex_mode = 0;//by default texture mode is 0
                     if (f->material[0])//if mesh has at least 1 material
                         mat=lib3ds_file_material_by_name(file, f->material);//load the material
+                    //here check whether this material is to be replaced
+                    //if so replace the material and skip the things
+                    qDebug()<<f->material;
                     if( mat != oldmat )//if it is a new material
                     {
+                        qDebug()<<"updating with new material"<<f->material<<colorMap.contains(f->material);
                         if(mat){
                             if(mat->two_sided)//if it is two sided then disable cull face to avoid Q3dsModel::mess up
                                 glDisable(GL_CULL_FACE);
@@ -289,7 +306,9 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                                     QString textureName=datapath;
                                     textureName+="/"+QString(tex->name);
                                     QImage img;
-                                    img.load(QString(textureName));
+                                    //here there might be an alternative needed.
+                                    retrieveTexture(img, textureName);
+                                    //img.load(QString(textureName));
                                     QImage tex=QGLWidget::convertToGLFormat(img);
                                     int upload_format = GL_RED; /* safe choice, shows errors */
                                     //int bytespp=4;
@@ -320,10 +339,33 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                             {
                                 tex_mode = 0;
                             }
-                            glMaterialfv(GL_FRONT, GL_AMBIENT, mat->ambient);
-                            glMaterialfv(GL_FRONT, GL_DIFFUSE, mat->diffuse);
-                            glMaterialfv(GL_FRONT, GL_SPECULAR, mat->specular);
-                            glMaterialf(GL_FRONT, GL_SHININESS, pow(2, 10.0*mat->shininess));
+                            qDebug()<<"updating going ahead...";
+                            if(colorMap.contains(f->material))
+                            {
+                                QColor& c=colorMap[f->material];
+                                double R,G,B,A;
+                                R=c.redF();
+                                G=c.greenF();
+                                B=c.blueF();
+                                A=c.alphaF();
+                                qDebug()<<"replacing color "<<R<<G<<B<<A;
+                                Lib3dsRgba a={R,G,B,A};
+                                Lib3dsRgba d={R,G,B,A};
+                                Lib3dsRgba s={1.0, 1.0, 1.0, 1.0};
+                                //set material properties
+                                glMaterialfv(GL_FRONT, GL_AMBIENT, a);
+                                glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
+                                glMaterialfv(GL_FRONT, GL_SPECULAR, s);
+                                glMaterialf(GL_FRONT, GL_SHININESS, pow(2, 10.0*0.5));
+                                oldmat=mat;
+                            }
+                            else
+                            {
+                                 glMaterialfv(GL_FRONT, GL_AMBIENT, mat->ambient);
+                                 glMaterialfv(GL_FRONT, GL_DIFFUSE, mat->diffuse);
+                                 glMaterialfv(GL_FRONT, GL_SPECULAR, mat->specular);
+                                 glMaterialf(GL_FRONT, GL_SHININESS, pow(2, 10.0*mat->shininess));
+                            }
                         }
                         else
                         {
@@ -339,15 +381,15 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                         oldmat = mat;//update current material
                     }
                     else
-                        if(mat!=NULL && mat->texture1_map.name[0])
+                    if(mat!=NULL && mat->texture1_map.name[0])
+                    {
+                        Lib3dsTextureMap *tex = &mat->texture1_map;
+                        if(tex!=NULL && tex->user.p!=NULL)
                         {
-                            Lib3dsTextureMap *tex = &mat->texture1_map;
-                            if(tex!=NULL && tex->user.p!=NULL)
-                            {
-                                pt=(Player_texture*)tex->user.p;
-                                tex_mode=pt->valid;
-                            }
-                        }
+                            pt=(Player_texture*)tex->user.p;
+                            tex_mode=pt->valid;
+                         }
+                    }
                     if(tex_mode)//if in texture mode, bind texture
                     {
                         glEnable(GL_TEXTURE_2D);

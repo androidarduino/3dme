@@ -6,7 +6,7 @@ TARGET = 3dsplay
 DEPENDPATH += . ./lib3ds/release
 INCLUDEPATH += . ./lib3ds
 QT += opengl
-
+CONFIG += console
 LIBS += ./lib3ds/release/lib3ds.dll
 #-lglut -lGL -lSDL -lSDL_image
 
