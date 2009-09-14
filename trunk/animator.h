@@ -22,7 +22,11 @@ class Vector//一个三维向量，可提供角度和位移两种表达方式
 class Node//一个部分，如小腿，可绕轴旋转移动
 {
     public:
-        void* mesh;
+        QString name;
+        double width, height, depth;
+        double x,y,z;
+        double cx,cy,cz;
+        QList<GLuint> displayLists;
         Vector* axis;
         QList<Vector*> conjunctions;
         void rotate(const Vector& v);
