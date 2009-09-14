@@ -2,7 +2,17 @@
 #define Q3DSMODEL_H
 
 #include <QGLWidget>
+#include <QDebug>
 #include "q3dstools.h"
+
+/*
+  TODO:
+        1. Q3dsModel to identify axises and
+conjunctions.
+        2. Q3dsModel to connect conjunctions each other
+        3. Q3dsModel to rotate a part(and its children) around an axis
+        4. Q3dsModel to rotate part against a camera angle
+  */
 
 class Player_texture
 {
@@ -11,6 +21,18 @@ class Player_texture
         void *bitmap;
         GLuint tex_id;
         float scale_x, scale_y;
+};
+
+class Q3dsPoint
+{
+    public:
+        Q3dsPoint(){};
+        float x,y,z;
+        Q3dsPoint& operator =(Q3dsPoint& p)
+        {
+            x=p.x;y=p.y;z=p.z;
+            return *this;
+        }
 };
 
 class Q3dsModel:public QGLWidget
@@ -31,6 +53,8 @@ class Q3dsModel:public QGLWidget
         void replaceColor(QString colorName, QColor color);
         void loadModel(QString fileName);
         void initGL();
+        void join(Q3dsModel* model, QString remoteJoint, QString localJoint);
+        void addJoint(Q3dsPoint joint);
     protected:
         void paintGL();
         void initializeGL();
@@ -45,6 +69,8 @@ class Q3dsModel:public QGLWidget
         void light_update(Lib3dsLight *l);
         void render_node(Lib3dsNode *node);
     private:
+        QMap<QString, Q3dsPoint> joints;//conjunctions pool
+        QList<Q3dsModel*> relatedObjects;
         int TEX_XSIZE, TEX_YSIZE;
         float zoom;
         QString datapath,objName;

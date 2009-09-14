@@ -3,16 +3,21 @@
 # #####################################################################
 TEMPLATE = app
 TARGET = 3dsplay
-DEPENDPATH += . ./lib3ds/release
-INCLUDEPATH += . ./lib3ds
+DEPENDPATH += . \
+    ./lib3ds/release
+INCLUDEPATH += . \
+    ./lib3ds
 QT += opengl
 CONFIG += console
 LIBS += ./lib3ds/release/lib3ds.dll
-#-lglut -lGL -lSDL -lSDL_image
 
+# -lglut -lGL -lSDL -lSDL_image
 # Input
 HEADERS += q3dstools.h \
     q3dsmodel.h \
-    q3dsscene.h
+    q3dsscene.h \
+    animator.h
 
-SOURCES += main.cpp
+# Q3dsGroup.h
+SOURCES += main.cpp \
+    animator.cpp

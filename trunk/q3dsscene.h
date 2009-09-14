@@ -3,6 +3,12 @@
 
 #include "q3dsmodel.h"
 
+/*
+  TODO:
+        1. Q3dsScene to support cameras
+        2. Q3dsScene rotate around an axis
+  */
+
 class Q3dsScene:public QGLWidget
 {
     public:

@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QDebug>
 #include "q3dsscene.h"
+#include "animator.h"
 
 int main(int argc, char** argv)
 {
@@ -39,10 +40,10 @@ int main(int argc, char** argv)
 //    skates3.moveTo(0,200,400);
     scene.show();
 */
+    /*
     Q3dsModel head("head.3ds");
     Q3dsModel hair;
     hair.replaceColor("Material #2", QColor::fromRgbF(0,1,0,0.8));
-    hair.replaceColor("08 - Default", QColor::fromRgb(0,0,255));
     hair.loadModel("hair.3ds");
     Q3dsScene scene;
     scene.models.append(&head);
@@ -52,5 +53,9 @@ int main(int argc, char** argv)
     hair.moveTo(-50,0,100);
     scene.show();
     scene.resize(600,600);
+    */
+    Model model;
+    model.loadModel("doll.3ds");
+    qDebug()<<"testing";
     return app.exec();
 }
