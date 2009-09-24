@@ -17,6 +17,10 @@ class Q3dsPoint
 {
     public:
         float x,y,z;
+        Q3dsPoint(){};
+        void setPos(float* p){
+            x=p[0];y=p[1];z=p[2];
+        }
 };
 
 class Q3dsModel:public QGLWidget
@@ -254,6 +258,9 @@ void Q3dsModel::render_node(Lib3dsNode *node)
     if (node->type==LIB3DS_OBJECT_NODE)//if it is a mesh
     {
         Lib3dsMesh *mesh;
+        QString nodeName(node->name);
+        if(nodeName.startsWith("_"))
+            return;
         if (strcmp(node->name,"$$$DUMMY")==0)//why change the name to dummy?
         {
             return;
@@ -263,6 +270,13 @@ void Q3dsModel::render_node(Lib3dsNode *node)
             mesh=lib3ds_file_mesh_by_name(file, node->name);
         if (!mesh->user.d)
         {
+            //TODO: make two objects and test the conjunction generation code
+            // next step would be writing the code to connect two objects
+            // when drawing the objects, it should follow the tree structure,
+            // move around the conjunctions and rotate accordingly
+            if(nodeName.startsWith("_"))
+                conjunctions[nodeName].setPos(mesh->pointL->pos);
+            qDebug()<<"Node name is: "<<nodeName<<" at: "<<mesh->pointL->pos[0]<<mesh->pointL->pos[1]<<mesh->pointL->pos[2];
             ASSERT(mesh);
             if (!mesh) {
                 return;
@@ -294,10 +308,10 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                         mat=lib3ds_file_material_by_name(file, f->material);//load the material
                     //here check whether this material is to be replaced
                     //if so replace the material and skip the things
-                    qDebug()<<f->material;
+                    //qDebug()<<f->material;
                     if( mat != oldmat )//if it is a new material
                     {
-                        qDebug()<<"updating with new material"<<f->material<<colorMap.contains(f->material);
+                        //qDebug()<<"updating with new material"<<f->material<<colorMap.contains(f->material);
                         if(mat){
                             if(mat->two_sided)//if it is two sided then disable cull face to avoid Q3dsModel::mess up
                                 glDisable(GL_CULL_FACE);
@@ -347,7 +361,7 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                             {
                                 tex_mode = 0;
                             }
-                            qDebug()<<"updating going ahead...";
+                            //qDebug()<<"updating going ahead...";
                             if(colorMap.contains(f->material))
                             {
                                 QColor& c=colorMap[f->material];
@@ -356,7 +370,7 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                                 G=c.greenF();
                                 B=c.blueF();
                                 A=c.alphaF();
-                                qDebug()<<"replacing color "<<R<<G<<B<<A;
+                                //qDebug()<<"replacing color "<<R<<G<<B<<A;
                                 Lib3dsRgba a={R,G,B,A};
                                 Lib3dsRgba d={R,G,B,A};
                                 Lib3dsRgba s={1.0, 1.0, 1.0, 1.0};

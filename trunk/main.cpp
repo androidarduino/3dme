@@ -68,11 +68,14 @@ int main(int argc, char** argv)
     hair.moveTo(-50,0,100);
     scene.show();
     scene.resize(600,600);
-/*    Model model;
-    model.loadModel("doll.3ds");
-    qDebug()<<"testing";
+    /*
+    Q3dsModel model("head.3ds");
+    Q3dsModel m1("hair.3ds");
+    Q3dsScene scene;
+    scene.models.append(&model);
+    scene.models.append(&m1);
+    scene.show();
     */
-    return app.exec();
     /*
     //should be something like this:
     Q3dsModel head("head.3ds");
@@ -87,4 +90,5 @@ int main(int argc, char** argv)
     leftArm.connect(&body,"rightShoulder");
     //.......do for every part
     */
+    return app.exec();
 }
