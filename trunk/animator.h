@@ -4,6 +4,7 @@
 #include <QMap>
 #include <QString>
 #include <QDebug>
+#include <QGLWidget>
 #include <lib3ds/file.h>
 #include <lib3ds/camera.h>
 #include <lib3ds/mesh.h>
@@ -12,6 +13,16 @@
 #include <lib3ds/matrix.h>
 #include <lib3ds/vector.h>
 #include <lib3ds/light.h>
+
+/*class Player_texture
+{
+    public:
+        int valid;
+        void *bitmap;
+        GLuint tex_id;
+        float scale_x, scale_y;
+};
+*/
 
 class Vector//一个三维向量，可提供角度和位移两种表达方式
 {
@@ -22,14 +33,13 @@ class Vector//一个三维向量，可提供角度和位移两种表达方式
 class Node//一个部分，如小腿，可绕轴旋转移动
 {
     public:
+        Node(QString n);
         QString name;
-        double width, height, depth;
-        double x,y,z;
-        double cx,cy,cz;
-        QList<GLuint> displayLists;
+        QList<uint> displayLists;
         Vector* axis;
         QList<Vector*> conjunctions;
         void rotate(const Vector& v);
+        void createDisplayLists(Lib3dsNode* node, Lib3dsFile* file);
 };
 
 class Pose//一个姿势，由所有的关节角度和根节点的位置决定

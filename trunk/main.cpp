@@ -18,6 +18,7 @@ int main(int argc, char** argv)
     Q3dsModel venus("venus.3ds");
     Q3dsModel venus2("venus.3ds");
     Q3dsModel venus3("venus.3ds");
+    Q3dsModel teapot("teapot.3ds");
     Q3dsScene scene;
     scene.models.append(&monkey);
     scene.models.append(&skates);
@@ -26,6 +27,7 @@ int main(int argc, char** argv)
     scene.models.append(&venus);
     scene.models.append(&venus2);
     scene.models.append(&venus3);
+    scene.models.append(&teapot);
     venus2.rotate(30,0,0);
     venus2.scale(0.5,0.5,0.5);
     venus2.moveTo(0,200,400);
@@ -36,11 +38,24 @@ int main(int argc, char** argv)
     skates2.rotate(90,0,0);
     skates2.moveTo(0,200,400);
     skates3.scaleTo(100);
+    teapot.scaleTo(400);
+    teapot.moveTo(200,200,200);
 //    skates2.moveTo(0,200,400);
 //    skates3.moveTo(0,200,400);
+    scene.show();*/
+/*
+    Q3dsScene scene;
+    for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+    for(int k=0;k<3;k++)
+    {
+        Q3dsModel* m=new Q3dsModel("xiao.3ds");
+        m->scaleTo(150);
+        m->moveTo(i*400,j*400,k*400);
+        scene.models.append(m);
+    }
     scene.show();
 */
-    /*
     Q3dsModel head("head.3ds");
     Q3dsModel hair;
     hair.replaceColor("Material #2", QColor::fromRgbF(0,1,0,0.8));
@@ -53,9 +68,9 @@ int main(int argc, char** argv)
     hair.moveTo(-50,0,100);
     scene.show();
     scene.resize(600,600);
-    */
-    Model model;
+/*    Model model;
     model.loadModel("doll.3ds");
     qDebug()<<"testing";
+    */
     return app.exec();
 }

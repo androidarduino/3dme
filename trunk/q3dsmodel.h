@@ -6,13 +6,13 @@
 #include "q3dstools.h"
 
 /*
-  TODO:
-        1. Q3dsModel to identify axises and
-conjunctions.
-        2. Q3dsModel to connect conjunctions each other
-        3. Q3dsModel to rotate a part(and its children) around an axis
-        4. Q3dsModel to rotate part against a camera angle
-  */
+   TODO:
+   1. Q3dsModel to identify axises and
+   conjunctions.
+   2. Q3dsModel to connect conjunctions each other
+   3. Q3dsModel to rotate a part(and its children) around an axis
+   4. Q3dsModel to rotate part against a camera angle
+   */
 
 class Player_texture
 {
@@ -39,6 +39,7 @@ class Q3dsModel:public QGLWidget
 {
     public:
         Q3dsModel(QString modelFile="", QWidget* parent=0);
+        ~Q3dsModel();
         void resize(int w, int h);
         void scale(float x, float y, float z);
         void scaleTo(float x);
@@ -88,8 +89,12 @@ class Q3dsModel:public QGLWidget
         float	anim_rotz ;
         int	mx, my;
         QMap<QString, QColor> colorMap;
+        QList<GLuint> displayLists;
 };
-
+Q3dsModel::~Q3dsModel()
+{
+    lib3ds_file_free(file);
+}
 Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
 {
     setMouseTracking(true);
@@ -155,7 +160,7 @@ void Q3dsModel::loadModel(QString fileName)
     cx = (bmin[0] + bmax[0])/2;
     cy = (bmin[1] + bmax[1])/2;
     cz = (bmin[2] + bmax[2])/2;
-    qDebug()<<cx<<cy<<cz;
+    //qDebug()<<cx<<cy<<cz;
     /* No cameras in the file?  Add four */
     if( !file->cameras ) {
         /* Add some cameras that encompass the bounding box */
@@ -261,32 +266,17 @@ void Q3dsModel::loadModel(QString fileName)
 
 void Q3dsModel::render_node(Lib3dsNode *node)
 {
-    ASSERT(file);
-    {
-        Lib3dsNode *p;
-        for (p=node->childs; p!=0; p=p->next)//render recursively
-        {
-            render_node(p);
-        }
-    }
+    for (Lib3dsNode* p=node->childs; p!=0; p=p->next)//render recursively
+        render_node(p);
     if (node->type==LIB3DS_OBJECT_NODE)//if it is a mesh
     {
         Lib3dsMesh *mesh;
-        if (strcmp(node->name,"$$$DUMMY")==0)//why change the name to dummy?
+        if (displayLists.empty())
         {
-            return;
-        }
-        mesh = lib3ds_file_mesh_by_name(file, node->data.object.morph);//create a mesh
-        if(mesh==NULL)//if creation unsuccessful, try again with other method
             mesh=lib3ds_file_mesh_by_name(file, node->name);
-        if (!mesh->user.d)
-        {
-            ASSERT(mesh);
-            if (!mesh) {
-                return;
-            }
-            mesh->user.d=glGenLists(1);//create an OpenGL list and assign to the mesh
-            glNewList(mesh->user.d, GL_COMPILE);
+            GLuint l=glGenLists(1);//create an OpenGL list and assign to the mesh
+            displayLists<<l;
+            glNewList(l, GL_COMPILE);
             {
                 //enable gl blending for transparency
                 glEnable(GL_BLEND);
@@ -294,6 +284,7 @@ void Q3dsModel::render_node(Lib3dsNode *node)
 
                 unsigned p;
                 Lib3dsVector *normalL=(Lib3dsVector*)malloc(3*sizeof(Lib3dsVector)*mesh->faces);//allocate normal line memory
+                //                qDebug()<<"total faces: "<<mesh->faces;//allocate normal line memory
                 Lib3dsMaterial *oldmat = (Lib3dsMaterial *)-1;//old material
                 {//create a matrix to multi to the list?
                     Lib3dsMatrix M;
@@ -332,6 +323,8 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                                     QString textureName=datapath;
                                     textureName+="/"+QString(tex->name);
                                     QImage img;
+                                    if(!img.load(QString(textureName)))
+                                        qDebug()<<"failed to open texture file"<<QString(textureName);
                                     //here there might be an alternative needed.
                                     retrieveTexture(img, textureName);
                                     //img.load(QString(textureName));
@@ -340,7 +333,7 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                                     //int bytespp=4;
                                     void *pixel = NULL;
                                     glGenTextures(1, &pt->tex_id);
-                                    //                                            printf("Uploading texture to OpenGL, id %d, at %d bytepp\n",pt->tex_id, bytespp);
+                                    //printf("Uploading texture to OpenGL, id %d, at bytepp\n",pt->tex_id);
                                     pixel = tex.bits();
                                     upload_format = GL_RGBA;//incase bytespp=4
                                     glBindTexture(GL_TEXTURE_2D, pt->tex_id);
@@ -387,10 +380,10 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                             }
                             else
                             {
-                                 glMaterialfv(GL_FRONT, GL_AMBIENT, mat->ambient);
-                                 glMaterialfv(GL_FRONT, GL_DIFFUSE, mat->diffuse);
-                                 glMaterialfv(GL_FRONT, GL_SPECULAR, mat->specular);
-                                 glMaterialf(GL_FRONT, GL_SHININESS, pow(2, 10.0*mat->shininess));
+                                glMaterialfv(GL_FRONT, GL_AMBIENT, mat->ambient);
+                                glMaterialfv(GL_FRONT, GL_DIFFUSE, mat->diffuse);
+                                glMaterialfv(GL_FRONT, GL_SPECULAR, mat->specular);
+                                glMaterialf(GL_FRONT, GL_SHININESS, pow(2, 10.0*mat->shininess));
                             }
                         }
                         else
@@ -407,15 +400,15 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                         oldmat = mat;//update current material
                     }
                     else
-                    if(mat!=NULL && mat->texture1_map.name[0])
-                    {
-                        Lib3dsTextureMap *tex = &mat->texture1_map;
-                        if(tex!=NULL && tex->user.p!=NULL)
+                        if(mat!=NULL && mat->texture1_map.name[0])
                         {
-                            pt=(Player_texture*)tex->user.p;
-                            tex_mode=pt->valid;
-                         }
-                    }
+                            Lib3dsTextureMap *tex = &mat->texture1_map;
+                            if(tex!=NULL && tex->user.p!=NULL)
+                            {
+                                pt=(Player_texture*)tex->user.p;
+                                tex_mode=pt->valid;
+                            }
+                        }
                     if(tex_mode)//if in texture mode, bind texture
                     {
                         glEnable(GL_TEXTURE_2D);
@@ -437,14 +430,15 @@ void Q3dsModel::render_node(Lib3dsNode *node)
             }
             glEndList();
         }
-        if (mesh->user.d)//put into gl buffer
+        if (!displayLists.empty())//put into gl buffer
         {
             Lib3dsObjectData *d;
             glPushMatrix();
             d=&node->data.object;
             glMultMatrixf(&node->matrix[0][0]);
             glTranslatef(-d->pivot[0], -d->pivot[1], -d->pivot[2]);
-            glCallList(mesh->user.d);
+            foreach(GLuint i, displayLists)
+                glCallList(i);
             glPopMatrix();
             if(iflush)
                 glFlush();
@@ -548,6 +542,7 @@ void Q3dsModel::draw_light(const GLfloat *pos, const GLfloat *color)
 
 void Q3dsModel::display(bool externCall)
 {
+    //long start=clock();
     /*            Lib3dsNode *c,*t;
                   Lib3dsFloat fov=0, roll=0;
                   float near, far, dist;
@@ -637,6 +632,7 @@ void Q3dsModel::display(bool externCall)
     //            glTranslatef(0.,-dist, 0.);
     //            lib3ds_matrix_camera(M, campos, tgt, roll);
     //            glMultMatrixf(&M[0][0]);
+    //long middle=clock();
     if(show_object)
     {
         for(Lib3dsNode* p=file->nodes; p!=0; p=p->next) {
@@ -667,6 +663,8 @@ void Q3dsModel::display(bool externCall)
                   glMaterialfv(GL_FRONT, GL_EMISSION, black);
                   }
                   */
+    //long finish=clock();
+    //qDebug()<<middle-start<<finish-middle;
 }
 void Q3dsModel::mouse_move(QMouseEvent* event)
 {
