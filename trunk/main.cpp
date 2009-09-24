@@ -73,4 +73,18 @@ int main(int argc, char** argv)
     qDebug()<<"testing";
     */
     return app.exec();
+    /*
+    //should be something like this:
+    Q3dsModel head("head.3ds");
+    Q3dsModel hair("hair.3ds");
+    hair.connect(&head, "top");
+    Q3dsModel body("body.3ds");
+    head.connect(&body,"neck");
+    Q3dsModel leftArm("arm.3ds");
+    leftArm.connect(&body,"leftShoulder");
+    Q3dsModel rightArm("arm.3ds");
+    rightArm.mirror();
+    leftArm.connect(&body,"rightShoulder");
+    //.......do for every part
+    */
 }

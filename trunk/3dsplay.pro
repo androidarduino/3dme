@@ -7,8 +7,10 @@ TARGET = play
 DEPENDPATH += .
 INCLUDEPATH += .
 QT += opengl
-LIBS += -l3ds -lGL
 
+unix{
+LIBS += -l3ds -lGL
+}
 win32{
 TEMPLATE = app
 TARGET = play
