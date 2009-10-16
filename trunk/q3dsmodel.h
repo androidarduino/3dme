@@ -17,7 +17,7 @@ class Q3dsPoint
 {
     public:
         float x,y,z;
-        Q3dsPoint(){};
+        Q3dsPoint(){x=y=z=0;};
         void setPos(float* p){
             x=p[0];y=p[1];z=p[2];
         }
@@ -41,7 +41,8 @@ class Q3dsModel:public QGLWidget
         void replaceColor(QString colorName, QColor color);
         void loadModel(QString fileName);
         void initGL();
-        void setConjunctions(QString name, float x, float y, float z);
+        Q3dsPoint& conjunction(QString name, Q3dsPoint p);
+        void setAxis(Q3dsPoint& p);
     protected:
         void paintGL();
         void initializeGL();
@@ -74,6 +75,7 @@ class Q3dsModel:public QGLWidget
         float	anim_rotz ;
         int	mx, my;
         QMap<QString, QColor> colorMap;
+        Q3dsPoint axis;
 };
 
 Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
@@ -259,8 +261,8 @@ void Q3dsModel::render_node(Lib3dsNode *node)
     {
         Lib3dsMesh *mesh;
         QString nodeName(node->name);
-        if(nodeName.startsWith("_"))
-            return;
+        //if(nodeName.startsWith("_"))
+        //    return;
         if (strcmp(node->name,"$$$DUMMY")==0)//why change the name to dummy?
         {
             return;
@@ -274,8 +276,13 @@ void Q3dsModel::render_node(Lib3dsNode *node)
             // next step would be writing the code to connect two objects
             // when drawing the objects, it should follow the tree structure,
             // move around the conjunctions and rotate accordingly
+            // should test only at the first run, and neglect in the future
             if(nodeName.startsWith("_"))
+            {
                 conjunctions[nodeName].setPos(mesh->pointL->pos);
+                qDebug()<<"found Conjunction: "<<nodeName<<conjunctions[nodeName].x<<conjunctions[nodeName].y<<conjunctions[nodeName].z;
+                return;
+            }
             qDebug()<<"Node name is: "<<nodeName<<" at: "<<mesh->pointL->pos[0]<<mesh->pointL->pos[1]<<mesh->pointL->pos[2];
             ASSERT(mesh);
             if (!mesh) {
@@ -764,6 +771,18 @@ void Q3dsModel::initializeGL()
     //glEnable(GL_NORMALIZE);
     //glPolygonOffset(1.0, 2);
     //Q3dsTools::create_icons();
+}
+
+Q3dsPoint& Q3dsModel::conjunction(QString name, Q3dsPoint p)
+{
+    return conjunctions[name];
+}
+
+void Q3dsModel::setAxis(Q3dsPoint& p)
+{
+    axis.x=p.x;
+    axis.y=p.y;
+    axis.z=p.y;
 }
 
 #endif
