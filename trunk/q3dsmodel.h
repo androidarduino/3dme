@@ -41,8 +41,8 @@ class Q3dsModel:public QGLWidget
         void replaceColor(QString colorName, QColor color);
         void loadModel(QString fileName);
         void initGL();
-        Q3dsPoint& conjunction(QString name, Q3dsPoint p);
-        void setAxis(Q3dsPoint& p);
+        Q3dsPoint& conjunction(QString name);
+        void addChildToAxis(Q3dsModel* child, QString axis);
     protected:
         void paintGL();
         void initializeGL();
@@ -55,7 +55,7 @@ class Q3dsModel:public QGLWidget
         void draw_light(const GLfloat *pos, const GLfloat *color);
         void draw_bounds(Lib3dsVector tgt);
         void light_update(Lib3dsLight *l);
-        void render_node(Lib3dsNode *node);
+        void render_node(Lib3dsNode *node, bool dryRun=false);
     private:
         QMap<QString, Q3dsPoint> conjunctions;//conjunctions pool
         int TEX_XSIZE, TEX_YSIZE;
@@ -75,7 +75,7 @@ class Q3dsModel:public QGLWidget
         float	anim_rotz ;
         int	mx, my;
         QMap<QString, QColor> colorMap;
-        Q3dsPoint axis;
+        QList<Q3dsModel*> children;
 };
 
 Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
@@ -143,7 +143,7 @@ void Q3dsModel::loadModel(QString fileName)
     cx = (bmin[0] + bmax[0])/2;
     cy = (bmin[1] + bmax[1])/2;
     cz = (bmin[2] + bmax[2])/2;
-    qDebug()<<cx<<cy<<cz;
+    //qDebug()<<cx<<cy<<cz;
     /* No cameras in the file?  Add four */
     if( !file->cameras ) {
         /* Add some cameras that encompass the bounding box */
@@ -245,9 +245,12 @@ void Q3dsModel::loadModel(QString fileName)
         currentCamera=QString(file->cameras->name);
     }
     lib3ds_file_eval(file,0.);
+    for(Lib3dsNode* p=file->nodes; p!=0; p=p->next) {
+            render_node(p,true);
+        }
 }
 
-void Q3dsModel::render_node(Lib3dsNode *node)
+void Q3dsModel::render_node(Lib3dsNode *node, bool dryRun)
 {
     ASSERT(file);
     {
@@ -283,7 +286,9 @@ void Q3dsModel::render_node(Lib3dsNode *node)
                 qDebug()<<"found Conjunction: "<<nodeName<<conjunctions[nodeName].x<<conjunctions[nodeName].y<<conjunctions[nodeName].z;
                 return;
             }
-            qDebug()<<"Node name is: "<<nodeName<<" at: "<<mesh->pointL->pos[0]<<mesh->pointL->pos[1]<<mesh->pointL->pos[2];
+            if(dryRun)
+                return;
+            //qDebug()<<"Node name is: "<<nodeName<<" at: "<<mesh->pointL->pos[0]<<mesh->pointL->pos[1]<<mesh->pointL->pos[2];
             ASSERT(mesh);
             if (!mesh) {
                 return;
@@ -551,126 +556,31 @@ void Q3dsModel::draw_light(const GLfloat *pos, const GLfloat *color)
 
 void Q3dsModel::display(bool externCall)
 {
-    /*            Lib3dsNode *c,*t;
-                  Lib3dsFloat fov=0, roll=0;
-                  float near, far, dist;
-                  float *campos=0;
-                  float *tgt=0;
-                  Lib3dsMatrix M;
-                  Lib3dsCamera *cam;
-                  Lib3dsVector v;
-                  Lib3dsNode *p;
-                  if(!externCall)
-                  {
-                  if(file!=NULL && file->background.solid.use)//put in the default background color
-                  glClearColor(file->background.solid.col[0], file->background.solid.col[1], file->background.solid.col[2],1.);
-                  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                  }
-                  if(anti_alias)
-                  glEnable(GL_POLYGON_SMOOTH);
-                  else
-                  glDisable(GL_POLYGON_SMOOTH);
-                  if (!file)
-                  return;
-                  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, file->ambient);
-                  c=lib3ds_file_node_by_name(file, currentCamera.toAscii().constData(), LIB3DS_CAMERA_NODE);//get the camera
-                  t=lib3ds_file_node_by_name(file, currentCamera.toAscii().constData(), LIB3DS_TARGET_NODE);//get the target
-                  if(t!=NULL)
-                  tgt = t->data.target.pos;//get target pos
-                  if( c!= NULL ) {
-                  fov = c->data.camera.fov;//get camera details
-                  roll = c->data.camera.roll;
-                  campos = c->data.camera.pos;
-                  }
-                  if((cam=lib3ds_file_camera_by_name(file,currentCamera.toAscii().constData()))==NULL)
-                  return;
-                  near = cam->near_range;//get its near range
-                  far = cam->far_range;//get its far range if ISO camera, it should be just 1.5 times of size away
-                  if (c == NULL || t == NULL) {
-                  if( c == NULL ) {
-                  fov = cam->fov;
-                  roll = cam->roll;
-                  campos = cam->position;
-                  }
-                  if( t == NULL )
-                  tgt = cam->target;
-                  }
-                  */
     if(!externCall)
     {
         if(file!=NULL && file->background.solid.use)//put in the default background color
             glClearColor(file->background.solid.col[0], file->background.solid.col[1], file->background.solid.col[2],1.);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    //            if( near <= 0. ) near = far * .001;
-    //            gluPerspective(fov, 1.0*gl_width/gl_height, near, far);//set the perspective of the view
-    gluPerspective(45,1,1,10000);//set the perspective of the view
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    //            glRotatef(-90, 1.0,0,0);
-    // User rotates the view about the target point
-    //            lib3ds_vector_sub(v, tgt, campos);
-    //            dist = lib3ds_vector_length(v);
-    //            glTranslatef(0. ,dist, 0.);
-    glTranslatef(0,0,-3000);
-    glRotatef(view_rotx, 1., 0., 0.);//rotate
-    glRotatef(view_roty, 0., 1., 0.);
-    glRotatef(view_rotz, 0., 0., 1.);
     glTranslatef(xOffset,yOffset,zOffset);
     glRotatef(xRotate, 1., 0., 0.);//rotate
     glRotatef(yRotate, 0., 1., 0.);
     glRotatef(zRotate, 0., 0., 1.);
     glScalef(xScale,yScale,zScale);//scale
-    glTranslatef(-cx,-cy,-cz);//put it back to 0,0,0
-    /*
-       glTranslatef(0,0,-2000);
-       glRotatef(view_rotx, 1., 0., 0.);//rotate
-       glRotatef(view_roty, 0., 1., 0.);
-       glRotatef(view_rotz, 0., 0., 1.);
-       glTranslatef(-cx,-cy,-cz);//put it to 0,0,0 centered position
-       glTranslatef(xOffset,yOffset,zOffset);
-       glScalef(xScale,yScale,zScale);//scale
-       glRotatef(xRotate, 1., 0., 0.);//rotate
-       glRotatef(yRotate, 0., 1., 0.);
-       glRotatef(zRotate, 0., 0., 1.);
-       */
-
-    //            glTranslatef(0.,-dist, 0.);
-    //            lib3ds_matrix_camera(M, campos, tgt, roll);
-    //            glMultMatrixf(&M[0][0]);
     if(show_object)
     {
         for(Lib3dsNode* p=file->nodes; p!=0; p=p->next) {
             render_node(p);
         }
     }
-    /*            if(show_bounds)
-                  draw_bounds(tgt);
-                  if(show_cameras)
-                  {
-                  for( cam = file->cameras; cam != NULL; cam = cam->next )
-                  {
-                  lib3ds_matrix_camera(M, cam->position, cam->target, cam->roll);
-                  lib3ds_matrix_inv(M);
-                  glPushMatrix();
-                  glMultMatrixf(&M[0][0]);
-                  glScalef(isize/20, isize/20, isize/20);
-                  glCallList(Q3dsTools::getCameraList());
-                  glPopMatrix();
-                  }
-                  }
-                  if( show_lights )
-                  {
-                  Lib3dsLight *light;
-                  for(light = file->lights; light!= NULL; light=light->next)
-                  draw_light(light->position, light->color);
-                  const GLfloat black[4] = {0.,0.,0.,1.};
-                  glMaterialfv(GL_FRONT, GL_EMISSION, black);
-                  }
-                  */
-}
+    glScalef(1/xScale,1/yScale,1/zScale);//scale back because scale shouldn't be inherited
+    foreach(Q3dsModel* model, children)
+    {
+//        Q3dsPoint p1=conjunctions[axis];
+//        Q3dsPoint& p2=child->conjunction(axis);
+        model->display(externCall);
+    }
+ }
 void Q3dsModel::mouse_move(QMouseEvent* event)
 {
     if( event->buttons()==Qt::LeftButton)
@@ -771,18 +681,24 @@ void Q3dsModel::initializeGL()
     //glEnable(GL_NORMALIZE);
     //glPolygonOffset(1.0, 2);
     //Q3dsTools::create_icons();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Q3dsPoint& Q3dsModel::conjunction(QString name, Q3dsPoint p)
+Q3dsPoint& Q3dsModel::conjunction(QString name)
 {
+    //qDebug()<<"****************"<<name;
     return conjunctions[name];
 }
 
-void Q3dsModel::setAxis(Q3dsPoint& p)
+void Q3dsModel::addChildToAxis(Q3dsModel* child, QString axis)
 {
-    axis.x=p.x;
-    axis.y=p.y;
-    axis.z=p.y;
+    //display(true);
+    //child->display(true);
+    Q3dsPoint p1=conjunctions[axis];
+    Q3dsPoint& p2=child->conjunction(axis);
+    qDebug()<<"-------------------"<<p1.x<<p2.y;
+    child->move((p1.x-p2.x)*xScale, (p1.y-p2.y)*yScale, (p1.z-p2.z)*zScale);
+    children<<child;
 }
 
 #endif

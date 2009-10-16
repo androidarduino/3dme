@@ -41,10 +41,15 @@ void Q3dsScene::paintGL()
 {
     //gluLookAt(0,0,-2000,0,0,0,0,1,0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glRotatef(rot_x, 1,0,0);
-//    glRotatef(rot_z, 0,0,1);
+    glLoadIdentity();
+    //adjust to see the models
+    glTranslated(0,0,-300);
+    glRotatef(-90,1,0,0);
+    //end adjust
+    glRotatef(rot_x, 1,0,0);
+    glRotatef(rot_z, 0,0,1);
     foreach(Q3dsModel* model, models)
-        model->display();
+        model->display(true);
 }
 
 void Q3dsScene::initializeGL()
@@ -54,8 +59,12 @@ void Q3dsScene::initializeGL()
 
 void Q3dsScene::resizeGL(int width, int height)
 {
-    foreach(Q3dsModel* model, models)
-        model->resize(width,height);
+//    foreach(Q3dsModel* model, models)
+//        model->resize(width,height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45,1,0.1,1000);
+    glMatrixMode(GL_MODELVIEW);
     glViewport(0,0,width,height);
 }
 
@@ -69,8 +78,9 @@ void Q3dsScene::Q3dsScene::mouseMoveEvent(QMouseEvent* event)
     }
     mx = event->x();
     my = event->y();
-    foreach(Q3dsModel* model, models)
-        model->mouse_move(event);
+    //foreach(Q3dsModel* model, models)
+        //model->mouse_move(event);
+    //qDebug()<<rot_x<<rot_z;
 }
 
 void Q3dsScene::keyPressEvent(QKeyEvent* event)
@@ -82,8 +92,8 @@ void Q3dsScene::keyPressEvent(QKeyEvent* event)
 
 void Q3dsScene::wheelEvent(QWheelEvent* event)
 {
-    foreach(Q3dsModel* model, models)
-        model->wheel(event);;
+    //foreach(Q3dsModel* model, models)
+        //model->wheel(event);;
     update();
 }
 
