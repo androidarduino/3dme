@@ -43,6 +43,7 @@ class Q3dsModel:public QGLWidget
         void initGL();
         Q3dsPoint& conjunction(QString name);
         void addChildToAxis(Q3dsModel* child, QString axis);
+        void bend(float x, float y, float z);//bend against axis
     protected:
         void paintGL();
         void initializeGL();
@@ -71,11 +72,13 @@ class Q3dsModel:public QGLWidget
         float	sx, sy, sz, isize;
         float	cx, cy, cz;
         float xRotate,yRotate,zRotate,xOffset,yOffset,zOffset,xScale,yScale,zScale;
+        float xBend,yBend,zBend;
         float	view_rotx , view_roty , view_rotz ;
         float	anim_rotz ;
         int	mx, my;
         QMap<QString, QColor> colorMap;
         QList<Q3dsModel*> children;
+        Q3dsPoint axis;
 };
 
 Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
@@ -92,6 +95,7 @@ Q3dsModel::Q3dsModel(QString modelFile, QWidget* parent):QGLWidget(parent)
     show_cameras=false;
     show_lights=false;
     xRotate=yRotate=zRotate=0;
+    xBend=yBend=zBend=0;
     xOffset=yOffset=zOffset=0;
     xScale=yScale=zScale=1;
     TEX_XSIZE=TEX_YSIZE=1024;
@@ -562,11 +566,18 @@ void Q3dsModel::display(bool externCall)
             glClearColor(file->background.solid.col[0], file->background.solid.col[1], file->background.solid.col[2],1.);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
+    //rotation, moving and scaling
     glTranslatef(xOffset,yOffset,zOffset);
     glRotatef(xRotate, 1., 0., 0.);//rotate
     glRotatef(yRotate, 0., 1., 0.);
     glRotatef(zRotate, 0., 0., 1.);
     glScalef(xScale,yScale,zScale);//scale
+    //bending
+    glTranslatef(axis.x,axis.y,axis.z);
+    glRotatef(xBend, 1., 0., 0.);//rotate
+    glRotatef(yBend, 0., 1., 0.);
+    glRotatef(zBend, 0., 0., 1.);
+    glTranslatef(-axis.x, -axis.y, -axis.z);
     if(show_object)
     {
         for(Lib3dsNode* p=file->nodes; p!=0; p=p->next) {
@@ -698,7 +709,17 @@ void Q3dsModel::addChildToAxis(Q3dsModel* child, QString axis)
     Q3dsPoint& p2=child->conjunction(axis);
     qDebug()<<"-------------------"<<p1.x<<p2.y;
     child->move((p1.x-p2.x)*xScale, (p1.y-p2.y)*yScale, (p1.z-p2.z)*zScale);
+    child->axis.x=p2.x;
+    child->axis.y=p2.y;
+    child->axis.z=p2.z;
     children<<child;
+}
+
+void Q3dsModel::bend(float x, float y, float z)
+{
+    xBend+=x;
+    yBend+=y;
+    zBend+=z;
 }
 
 #endif

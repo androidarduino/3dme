@@ -1,6 +1,12 @@
 /*TODO:
   3. Optimize the rendering function, keep the list for next time rendering to achieve higher performance
-  5. There might be undeleted objects, eg. file
+  5. There might be undeleted objects, eg. file, this couldn't be resolved unless the model is implemented in the class to replace the use of file
+  6. Now the conjunctions works fine. next step would be
+  to implement the rotation around the conjunctions
+  7. Implement the rotation against particular angel/surface
+  8. Write a 3d skeleton animation editor, support rotation, pan
+  9. There might be a bunch of work to calculate the interval animation
+  10.
 */
 #include <QtGui>
 #include <QApplication>
@@ -21,6 +27,7 @@ int main(int argc, char** argv)
     body.moveTo(0,0,0);
     body.addChildToAxis(&head,"_neck");
     scene.models.append(&body);
+    head.bend(30,0,0);
     //scene.models.append(&body);
     scene.resize(600,600);
     scene.show();
