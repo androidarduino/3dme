@@ -42,7 +42,7 @@ class Q3dsModel:public QGLWidget
         void loadModel(QString fileName);
         void initGL();
         Q3dsPoint& conjunction(QString name);
-        void addChildToAxis(Q3dsModel* child, QString axis);
+        void addChildToAxis(Q3dsModel* child, QString axis, QString conjunction);
         void bend(float x, float y, float z);//bend against axis
     protected:
         void paintGL();
@@ -587,10 +587,9 @@ void Q3dsModel::display(bool externCall)
     glScalef(1/xScale,1/yScale,1/zScale);//scale back because scale shouldn't be inherited
     foreach(Q3dsModel* model, children)
     {
-//        Q3dsPoint p1=conjunctions[axis];
-//        Q3dsPoint& p2=child->conjunction(axis);
         model->display(externCall);
     }
+    glTranslatef(-xOffset,-yOffset,-zOffset);
  }
 void Q3dsModel::mouse_move(QMouseEvent* event)
 {
@@ -698,14 +697,18 @@ void Q3dsModel::initializeGL()
 Q3dsPoint& Q3dsModel::conjunction(QString name)
 {
     //qDebug()<<"****************"<<name;
+    if(!conjunctions.contains(name))
+        qDebug()<<"conjunction name not found: "<<name;
     return conjunctions[name];
 }
 
-void Q3dsModel::addChildToAxis(Q3dsModel* child, QString axis)
+void Q3dsModel::addChildToAxis(Q3dsModel* child, QString axis, QString conjunction)
 {
     //display(true);
     //child->display(true);
-    Q3dsPoint p1=conjunctions[axis];
+    if(!conjunctions.contains(conjunction))
+        qDebug()<<"conjunction name not found: "<<conjunction;
+    Q3dsPoint p1=conjunctions[conjunction];
     Q3dsPoint& p2=child->conjunction(axis);
     qDebug()<<"-------------------"<<p1.x<<p2.y;
     child->move((p1.x-p2.x)*xScale, (p1.y-p2.y)*yScale, (p1.z-p2.z)*zScale);

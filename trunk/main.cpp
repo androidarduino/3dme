@@ -18,17 +18,25 @@ int main(int argc, char** argv)
 {
     QApplication app(argc,argv);
 
-    Q3dsModel head("head.3ds");
     Q3dsScene scene;
+    Q3dsModel head("head.3ds");
     Q3dsModel body("body.3DS");
+    Q3dsModel arm("arm.3ds");
+    Q3dsModel smallarm("arm.3ds");
+    arm.scaleTo(30);
+    smallarm.scaleTo(30);
     head.scaleTo(40);
     head.move(0,0,10);
     body.scaleTo(50);
     body.moveTo(0,0,0);
-    body.addChildToAxis(&head,"_neck");
-    scene.models.append(&body);
+    body.addChildToAxis(&head,"_neck", "_neck");
+    body.addChildToAxis(&arm,"_shoulder", "_rightshou");
+    arm.addChildToAxis(&smallarm,"_shoulder","_elbow");
     head.bend(30,0,0);
+    arm.bend(0,30,0);
+    smallarm.bend(0,30,0);
     //scene.models.append(&body);
+    scene.models.append(&body);
     scene.resize(600,600);
     scene.show();
 
