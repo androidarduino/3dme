@@ -568,9 +568,11 @@ void Q3dsModel::display(bool externCall)
     }
     //rotation, moving and scaling
     glTranslatef(xOffset,yOffset,zOffset);
+/*
     glRotatef(xRotate, 1., 0., 0.);//rotate
     glRotatef(yRotate, 0., 1., 0.);
     glRotatef(zRotate, 0., 0., 1.);
+*/
     glScalef(xScale,yScale,zScale);//scale
     //bending
     glTranslatef(axis.x,axis.y,axis.z);
@@ -578,6 +580,7 @@ void Q3dsModel::display(bool externCall)
     glRotatef(yBend, 0., 1., 0.);
     glRotatef(zBend, 0., 0., 1.);
     glTranslatef(-axis.x, -axis.y, -axis.z);
+    //end bending
     if(show_object)
     {
         for(Lib3dsNode* p=file->nodes; p!=0; p=p->next) {
@@ -589,6 +592,11 @@ void Q3dsModel::display(bool externCall)
     {
         model->display(externCall);
     }
+    //TODO: rotate back, Not fully correct yet
+    glRotatef(-xBend, 1., 0., 0.);
+    glRotatef(-yBend, 0., 1., 0.);
+    glRotatef(-zBend, 0., 0., 1.);
+
     glTranslatef(-xOffset,-yOffset,-zOffset);
  }
 void Q3dsModel::mouse_move(QMouseEvent* event)

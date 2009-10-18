@@ -22,19 +22,32 @@ int main(int argc, char** argv)
     Q3dsModel head("head.3ds");
     Q3dsModel body("body.3DS");
     Q3dsModel arm("arm.3ds");
+    Q3dsModel leg("arm.3ds");
     Q3dsModel smallarm("arm.3ds");
-    arm.scaleTo(30);
-    smallarm.scaleTo(30);
-    head.scaleTo(40);
-    head.move(0,0,10);
+    Q3dsModel shank("arm.3ds");
     body.scaleTo(50);
+    head.scaleTo(40);
+    arm.scaleTo(30);
+    leg.scaleTo(30);
+    smallarm.scaleTo(30);
+    shank.scaleTo(30);
+    //smallarm.rotate(0,20,0);
+
+    head.move(0,0,10);
     body.moveTo(0,0,0);
+
     body.addChildToAxis(&head,"_neck", "_neck");
     body.addChildToAxis(&arm,"_shoulder", "_rightshou");
+    body.addChildToAxis(&leg,"_shoulder", "_lefthip");
+    leg.addChildToAxis(&shank,"_shoulder","_elbow");
     arm.addChildToAxis(&smallarm,"_shoulder","_elbow");
+
     head.bend(30,0,0);
     arm.bend(0,30,0);
-    smallarm.bend(0,30,0);
+    leg.bend(0,-90,15);
+    smallarm.bend(30,30,0);
+    shank.bend(0,0,-30);
+
     //scene.models.append(&body);
     scene.models.append(&body);
     scene.resize(600,600);
