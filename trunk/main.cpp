@@ -19,36 +19,54 @@ int main(int argc, char** argv)
     QApplication app(argc,argv);
 
     Q3dsScene scene;
+    Q3dsModel hair("hair.3ds");
     Q3dsModel head("head.3ds");
     Q3dsModel body("body.3DS");
     Q3dsModel arm("arm.3ds");
-    Q3dsModel leg("arm.3ds");
     Q3dsModel smallarm("arm.3ds");
+    Q3dsModel leg("arm.3ds");
     Q3dsModel shank("arm.3ds");
+    Q3dsModel arm1("arm.3ds");
+    Q3dsModel smallarm1("arm.3ds");
+    Q3dsModel leg1("arm.3ds");
+    Q3dsModel shank1("arm.3ds");
     body.scaleTo(50);
     head.scaleTo(40);
+    hair.scaleTo(50);
     arm.scaleTo(30);
-    leg.scaleTo(30);
     smallarm.scaleTo(30);
+    leg.scaleTo(30);
     shank.scaleTo(30);
-    //smallarm.rotate(0,20,0);
+    arm1.scaleTo(30);
+    smallarm1.scaleTo(30);
+    leg1.scaleTo(30);
+    shank1.scaleTo(30);
 
     head.move(0,0,10);
+    hair.move(-2,2,3);
     body.moveTo(0,0,0);
 
     body.addChildToAxis(&head,"_neck", "_neck");
     body.addChildToAxis(&arm,"_shoulder", "_rightshou");
     body.addChildToAxis(&leg,"_shoulder", "_lefthip");
+    body.addChildToAxis(&arm1,"_shoulder", "_leftshoul");
+    body.addChildToAxis(&leg1,"_shoulder", "_righthip");
     leg.addChildToAxis(&shank,"_shoulder","_elbow");
     arm.addChildToAxis(&smallarm,"_shoulder","_elbow");
+    leg1.addChildToAxis(&shank1,"_shoulder","_elbow");
+    arm1.addChildToAxis(&smallarm1,"_shoulder","_elbow");
+    head.addChildToAxis(&hair,"_headtop","_headtop");
 
-    head.bend(30,0,0);
-    arm.bend(0,30,0);
-    leg.bend(0,-90,15);
-    smallarm.bend(30,30,0);
+    head.bend(-30,0,0);
+    arm.bend(10,10,0);
+    smallarm.bend(60,60,60);
+    arm1.bend(0,180,0);
+    smallarm1.bend(60,60,60);
+    leg.bend(0,-90,0);
     shank.bend(0,0,-30);
+    leg1.bend(0,-90,0);
+    shank1.bend(0,0,-30);
 
-    //scene.models.append(&body);
     scene.models.append(&body);
     scene.resize(600,600);
     scene.show();

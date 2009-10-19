@@ -573,32 +573,38 @@ void Q3dsModel::display(bool externCall)
     glRotatef(yRotate, 0., 1., 0.);
     glRotatef(zRotate, 0., 0., 1.);
 */
+    //glTranslatef(axis.x,axis.y,axis.z);
+    glRotatef(xBend, 1, 0, 0);//rotate
+    glRotatef(yBend, 0, 1, 0);
+    glRotatef(zBend, 0, 0, 1);
+    //glTranslatef(-axis.x, -axis.y, -axis.z);
+
     glScalef(xScale,yScale,zScale);//scale
     //bending
-    glTranslatef(axis.x,axis.y,axis.z);
-    glRotatef(xBend, 1., 0., 0.);//rotate
-    glRotatef(yBend, 0., 1., 0.);
-    glRotatef(zBend, 0., 0., 1.);
-    glTranslatef(-axis.x, -axis.y, -axis.z);
     //end bending
-    if(show_object)
+    if(show_object)//draw self
     {
         for(Lib3dsNode* p=file->nodes; p!=0; p=p->next) {
             render_node(p);
         }
     }
     glScalef(1/xScale,1/yScale,1/zScale);//scale back because scale shouldn't be inherited
-    foreach(Q3dsModel* model, children)
+    foreach(Q3dsModel* model, children)//draw children
     {
+        glPushMatrix();
         model->display(externCall);
+        glPopMatrix();
     }
     //TODO: rotate back, Not fully correct yet
-    glRotatef(-xBend, 1., 0., 0.);
-    glRotatef(-yBend, 0., 1., 0.);
-    glRotatef(-zBend, 0., 0., 1.);
+    //glTranslatef(axis.x,axis.y,axis.z);
+    glRotatef(-xBend, 1, 0, 0);//rotate
+    glRotatef(-yBend, 0, 1, 0);
+    glRotatef(-zBend, 0, 0, 1);
+    //glTranslatef(-axis.x, -axis.y, -axis.z);
 
     glTranslatef(-xOffset,-yOffset,-zOffset);
  }
+
 void Q3dsModel::mouse_move(QMouseEvent* event)
 {
     if( event->buttons()==Qt::LeftButton)
