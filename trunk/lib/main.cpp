@@ -12,7 +12,6 @@
 #include <QApplication>
 #include <QDebug>
 #include "q3dsscene.h"
-#include "animator.h"
 
 int main(int argc, char** argv)
 {
