@@ -13,11 +13,11 @@ win32 {
     TEMPLATE = app
     TARGET = play
     DEPENDPATH += . \
-        ../lib3ds/release
+        ./lib3ds/release
     INCLUDEPATH += . \
-        ../lib3ds
+        ./lib3ds
     CONFIG += console
-    LIBS += ../lib3ds/release/lib3ds.dll
+    LIBS += ./lib3ds/release/lib3ds.dll
 }
 HEADERS += q3dsmodel.h \
     q3dsscene.h \
