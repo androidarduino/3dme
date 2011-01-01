@@ -1,0 +1,17 @@
+<part offset="0,0,0" size="50" rotation="N/A" bend="0,0,0" name="body.3DS" file="body.3DS" >
+ <part offset="0.0745186,1.08617,73.5662" size="40" rotation="N/A" bend="-30,0,0" name="head.3ds" file="head.3ds" axis="_neck=body.3DS->_neck" >
+  <part offset="1.01795,-1.24467,5.86346" size="50" rotation="N/A" bend="0,0,0" name="hair.3ds" file="hair.3ds" axis="_headtop=head.3ds->_headtop" />
+ </part>
+ <part offset="-11.9671,2.09589,39.0152" size="30" rotation="N/A" bend="10,10,0" name="arm.3ds" file="arm.3ds" axis="_shoulder=body.3DS->_rightshou" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="60,60,60" name="arm.3ds" file="arm.3ds" axis="_shoulder=arm.3ds->_elbow" />
+ </part>
+ <part offset="15.0269,2.09589,-0.872738" size="30" rotation="N/A" bend="0,-90,0" name="arm.3ds" file="arm.3ds" axis="_shoulder=body.3DS->_lefthip" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="0,0,-30" name="arm.3ds" file="arm.3ds" axis="_shoulder=arm.3ds->_elbow" />
+ </part>
+ <part offset="12.1751,2.09589,38.0151" size="30" rotation="N/A" bend="0,180,0" name="arm.3ds" file="arm.3ds" axis="_shoulder=body.3DS->_leftshoul" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="60,60,60" name="arm.3ds" file="arm.3ds" axis="_shoulder=arm.3ds->_elbow" />
+ </part>
+ <part offset="-15.3436,2.09589,-0.529564" size="30" rotation="N/A" bend="0,-90,0" name="arm.3ds" file="arm.3ds" axis="_shoulder=body.3DS->_righthip" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="0,0,-30" name="arm.3ds" file="arm.3ds" axis="_shoulder=arm.3ds->_elbow" />
+ </part>
+</part>
