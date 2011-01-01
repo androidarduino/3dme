@@ -1,0 +1,17 @@
+<part offset="0,0,0" size="50" rotation="N/A" bend="0,0,0" name="body" file="body.3DS" >
+ <part offset="0.0745186,1.08617,73.5662" size="40" rotation="N/A" bend="-30,0,0" name="head" file="head.3ds" axis="_neck=body->_neck" >
+  <part offset="1.01795,-1.24467,5.86346" size="50" rotation="N/A" bend="0,0,0" name="hair" file="hair.3ds" axis="_headtop=head->_headtop" />
+ </part>
+ <part offset="-11.9671,2.09589,39.0152" size="30" rotation="N/A" bend="10,10,0" name="larm" file="arm.3ds" axis="_shoulder=body->_rightshou" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="60,60,60" name="lsmlarm" file="arm.3ds" axis="_shoulder=larm->_elbow" />
+ </part>
+ <part offset="15.0269,2.09589,-0.872738" size="30" rotation="N/A" bend="0,-90,0" name="rarm" file="arm.3ds" axis="_shoulder=body->_lefthip" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="0,0,-30" name="rsmlarm" file="arm.3ds" axis="_shoulder=rarm->_elbow" />
+ </part>
+ <part offset="12.1751,-7.30411,36.4151" size="30" rotation="N/A" bend="-24,146.5,5.19999" name="lleg" file="arm.3ds" axis="_shoulder=body->_leftshoul" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="60,60,60" name="lsmlleg" file="arm.3ds" axis="_shoulder=lleg->_elbow" />
+ </part>
+ <part offset="-15.3436,2.09589,-0.529564" size="30" rotation="N/A" bend="0,-90,0" name="rleg" file="arm.3ds" axis="_shoulder=body->_righthip" >
+  <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="0,0,-30" name="rsmlleg" file="arm.3ds" axis="_shoulder=rleg->_elbow" />
+ </part>
+</part>

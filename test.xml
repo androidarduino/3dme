@@ -1,0 +1,4 @@
+<part offset="-11.9671,2.09589,39.0152" size="30" rotation="N/A" bend="10,10,0" name="left arm" file="arm.3ds" axis="_shoulder=body->_rightshou">
+ <part offset="-28.3143,0.0109728,0" size="30" rotation="N/A" bend="60,60,60" name="left small arm" file="arm.3ds" axis="_shoulder=left arm->_elbow"/>
+ <part offset="27.8086,1.67473,0" size="45" rotation="N/A" bend="0,0,0" name="65" file="C:/projects/3dmeeeditor/arm.3ds" axis="_elbow=left arm->"/>
+</part>
