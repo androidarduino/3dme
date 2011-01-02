@@ -3,11 +3,11 @@
 # #####################################################################
 TEMPLATE = app
 TARGET = 3dmeEditor
-DEPENDPATH += .
-INCLUDEPATH += .
+DEPENDPATH += . ./lib3ds
+INCLUDEPATH += . ./lib3ds
 QT += opengl \
     xml
-unix:LIBS += -l3ds \
+unix:LIBS += -Llib3ds/ -llib3ds \
     -lGL
 win32 { 
     TEMPLATE = app
