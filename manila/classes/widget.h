@@ -15,11 +15,17 @@ public:
 namespace Manila
 {
 
+class VisibleItem
+{
+public:
+    VisibleItem();
+};
+
 class Seat;
 
 class Boss;
 
-class Sailor
+class Sailor: public VisibleItem
 {
 public:
     Sailor();
@@ -32,17 +38,18 @@ public:
     void handInProfit();
 };
 
-class Seat
+class Seat: public VisibleItem
 {
 public:
     Seat(int cost);
     int d_cost;
     Sailor* d_owner;
 public:
+    void blink(bool blinkOrNot);
     bool takeSeat(Sailor* sailor);
 };
 
-class Stock
+class Stock: public VisibleItem
 {
 public:
     Stock();
@@ -50,7 +57,7 @@ public:
     QString d_type;
 };
 
-class Goods
+class Goods: public VisibleItem
 {
 public:
     Goods();
@@ -80,7 +87,7 @@ public:
     void calculateProfits();
 };
 
-class PirateBoat
+class PirateBoat: public VisibleItem
 {
 public:
     PirateBoat();
@@ -91,7 +98,7 @@ public:
     void invade(Boat* boat);
 };
 
-class Insurance
+class Insurance: public VisibleItem
 {
 public:
     Insurance();
@@ -125,7 +132,7 @@ public:
     void playRound();
 };
 
-class Dice
+class Dice: public VisibleItem
 {
 public:
     Dice();
@@ -133,7 +140,7 @@ public:
     int throwDice();
 };
 
-class Boat
+class Boat: public VisibleItem
 {
 public:
     Boat();
@@ -151,6 +158,9 @@ class Board
 {
 public:
     Board(int playerCount=3, int initFund=30);
+    void setup();
+    void doRound();
+    void doStep();
 public:
     QList<Boss*> bosses;
 private:
@@ -161,6 +171,18 @@ private:
     Insurance * insurance;
     Bank * bank;
 };
+
+/*
+void main()
+{
+    Board* board=new Board();
+    board->setup();
+    while(board->doRound())
+    {
+    }
+    displayScore(board);
+}
+  */
 
 }
 #endif // WIDGET_H
