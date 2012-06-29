@@ -12,6 +12,12 @@ Viewport{
         y: -1
         scale: 0.01
         mesh: Mesh{source: "body.3ds"}
+        onClicked: {
+            if(body.state==="armup")
+                body.state="stand";
+            else
+                body.state="armup";
+        }
         Item3D{
             id: head
             y: 160
@@ -41,8 +47,8 @@ Viewport{
             ]
             SequentialAnimation{
                 id: nodding
-                loops: 12
-                running: true
+                loops: 3
+                running: false
                 NumberAnimation { target: nod; property: "angle"; to: -10; duration: 100 }
                 NumberAnimation { target: nod; property: "angle"; to: 20; duration: 300; easing.type: Easing.InCubic }
                 NumberAnimation { target: nod; property: "angle"; to: -10; duration: 300 }
@@ -104,7 +110,7 @@ Viewport{
             SequentialAnimation{
                 id: wing2
                 loops: 6
-                running: true
+                running: false
                 NumberAnimation { target: armWing2; property: "angle"; to: 0; duration: 100 }
                 NumberAnimation { target: armWing2; property: "angle"; to: -70; duration: 500; easing.type: Easing.OutCubic }
                 NumberAnimation { target: armWing2; property: "angle"; to: 0; duration: 500 }
@@ -137,7 +143,7 @@ Viewport{
             SequentialAnimation{
                 id: swing1
                 loops: 6
-                running: true
+                running: false
                 NumberAnimation { target: legSwing1; property: "angle"; to: 0; duration: 100 }
                 NumberAnimation { target: legSwing1; property: "angle"; to: -70; duration: 500; easing.type: Easing.OutCubic }
                 NumberAnimation { target: legSwing1; property: "angle"; to: 0; duration: 500 }
@@ -167,14 +173,45 @@ Viewport{
                     angle: 0
                 }
             ]
-            SequentialAnimation{
-                id: swing2
-                loops: 6
-                running: true
-                NumberAnimation { target: legSwing2; property: "angle"; to: 0; duration: 100 }
-                NumberAnimation { target: legSwing2; property: "angle"; to: 70; duration: 500; easing.type: Easing.OutCubic }
-                NumberAnimation { target: legSwing2; property: "angle"; to: 0; duration: 500 }
-            }
+
         }
+        SequentialAnimation{
+            id: swing2
+            loops: 6
+            running: false
+            NumberAnimation { target: legSwing2; property: "angle"; to: 0; duration: 100 }
+            NumberAnimation { target: legSwing2; property: "angle"; to: 70; duration: 500; easing.type: Easing.OutCubic }
+            NumberAnimation { target: legSwing2; property: "angle"; to: 0; duration: 500 }
+        }
+        states: [
+            State{
+                name: "stand"
+                PropertyChanges{target: nod; angle: 20}
+                PropertyChanges{target: armWing1; angle: 70}
+                PropertyChanges{target: armWing2; angle: -70}
+                PropertyChanges{target: legSwing1; angle: 0}
+                PropertyChanges{target: legSwing2; angle: 0}
+            },
+            State{
+                name: "armup"
+                PropertyChanges{target: nod; angle: -10}
+                PropertyChanges{target: armWing1; angle: 0}
+                PropertyChanges{target: armWing2; angle: 0}
+                PropertyChanges{target: legSwing1; angle: 0}
+                PropertyChanges{target: legSwing2; angle: 0}
+            }
+        ]
+        transitions: [
+            Transition {
+                from: "*"
+                to: "stand"
+                NumberAnimation { properties: "angle"; duration: 500 }
+            },
+            Transition {
+                from: "*"
+                to: "armup"
+                NumberAnimation { properties: "angle"; duration: 800 }
+            }
+       ]
     }
 }
